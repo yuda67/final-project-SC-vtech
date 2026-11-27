@@ -10,6 +10,8 @@ REST API sederhana untuk mengelola akun tabungan, saldo, target tabungan, dan ri
 - Penambahan saldo dan penarikan saldo dengan pemeriksaan saldo yang tersedia.
 - Riwayat transaksi dengan filter jenis transaksi.
 - Profil pengguna yang menampilkan saldo, target, dan persentase target tabungan.
+- delete akun (pastikan saldo akun sudah 0)
+- update target tabungan jika ingin mengubah target dari akunya
 
 ## Teknologi
 
@@ -42,7 +44,7 @@ http://localhost:4000
 
 ## Endpoint API
 
-Semua endpoint memakai awalan `/api`. Endpoint yang ditandai **Ya** memerlukan header autentikasi:
+
 
 ```http
 Authorization: Bearer <token>
@@ -55,7 +57,9 @@ Authorization: Bearer <token>
 | `GET` | `/api/users/profile/me` | Ya | Mendapatkan profil pengguna yang sedang login |
 | `POST` | `/api/transactions/tambah-saldo` | Ya | Menambahkan saldo |
 | `POST` | `/api/transactions/tarik-saldo` | Ya | Menarik saldo |
-| `GET` | `/api/transactions/log` | Ya | Melihat riwayat transaksi |
+| `GET` | `/api/transactions/log` | Ya | Melihat riwayat transaksi, jika ingin hanya riwayat tarik-saldo tambahkan ?type=tarik-saldo |
+| `PATCH` | `/api/users/profile/ubah-targe` | Ya | ubah target tabungan akun|
+| `DELETE` | `/api/users/profile/delete` | Ya | hapus akun (pastikan saldo sudah 0)|
 
 ### Contoh request
 
@@ -113,8 +117,4 @@ Jika `type` tidak dikirim, API menampilkan semua transaksi milik pengguna terseb
 ```
 
 ## Catatan
-
-- Penarikan saldo ditolak jika saldo pengguna tidak mencukupi.
-- Riwayat transaksi hanya dapat dilihat oleh pengguna yang sedang login.
-- Jangan membagikan atau memasukkan file `.env` ke repositori publik. File tersebut sudah tercantum di `.gitignore`.
-- Script `npm test` belum dikonfigurasi untuk menjalankan pengujian.
+penarikan saldo akan ditolak jika saldo tidak mencukupi
