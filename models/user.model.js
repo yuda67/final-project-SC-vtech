@@ -16,6 +16,10 @@ const userSchema = new Schema(
             minLength: 4,
             maxLength: 50,
         },
+        saldoTabungan: {
+            type: Number,
+            default: 0,
+        },
     },
     {
         timestamps: true,
