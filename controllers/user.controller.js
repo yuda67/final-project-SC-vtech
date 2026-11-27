@@ -1,5 +1,6 @@
 import {User} from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import TransLog from "../models/transLog.model.js";
 
 const registerUser = async(req, res) => {
     try {
@@ -92,6 +93,52 @@ const seeProfile = async (req, res) => {
     }
 };
 
+const updateTargetTabungan = async (req, res) => {
+    try {
+        const { targetTabungan } = req.body;
+        if (typeof targetTabungan !== "number" || targetTabungan < 0) {
+            return res.status(400).json({ message: "Invalid targetTabungan" });
+        }
+        const user = await User.findByIdAndUpdate(
+            req.auth.id,
+            { targetTabungan },
+            { returnDocument: 'after' }
+        );
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.percentageTarget = user.targetTabungan > 0 ? `${((user.saldoTabungan / user.targetTabungan) * 100).toFixed(2)}%` : "0%";
+        return res.status(200).json({
+            message: "Target tabungan updated",
+            user: { id: user._id,
+                username: user.username, 
+                saldoTabungan: user.saldoTabungan, 
+                targetTabungan: user.targetTabungan, 
+                percentageTarget: user.percentageTarget }
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
 
+const deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.auth.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.saldoTabungan > 0) {
+            return res.status(400).json({ message: "masih terdapat saldo tabungan" });
+        }
+        await TransLog.deleteMany({ userId: req.auth.id });
+        const deletedUser = await User.findOneAndDelete({ _id: req.auth.id, saldoTabungan: 0 });
+        if (!deletedUser) {
+            return res.status(400).json({ message: "akun gagal dihapus" });
+        }
+        return res.status(200).json({ message: "akun berhasil dihapus" });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
 
-export {registerUser, loginUser, seeProfile};
+export {registerUser, loginUser, seeProfile, updateTargetTabungan, deleteUser};
