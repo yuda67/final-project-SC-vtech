@@ -3,10 +3,10 @@ import jwt from "jsonwebtoken";
 
 const registerUser = async(req, res) => {
     try {
-        const{ username, password} = req.body;
-        if(!username || !password){
+        const{ username, password, targetTabungan } = req.body;
+        if(!username || !password || !targetTabungan){
             return res.status(400).json({
-                message: "username and password are required"
+                message: "username, password, and targetTabungan are required"
             })
         };
         const existing = await User.findOne({username});
@@ -18,11 +18,16 @@ const registerUser = async(req, res) => {
 
         const user = await User.create({
             username,
-            password
+            password,
+            targetTabungan
         });
         res.status(201).json({
             message: "User registered",
-            user: {id: user._id, username: user.username, saldoTabungan: user.saldoTabungan}
+            user: {id: user._id,
+                username: user.username, 
+                saldoTabungan: user.saldoTabungan, 
+                targetTabungan: user.targetTabungan, 
+                percentageTarget: user.percentageTarget }
         })
     } catch (error) {
         res.status(500).json({
@@ -50,7 +55,11 @@ const loginUser = async (req, res) => {
         const token = jwt.sign({ ...tokenPayload, type: "access" }, process.env.JWT_SECRET, { expiresIn: "15m" });
         return res.status(200).json({
             message: "Login successful",
-            user: { id: user._id, username: user.username, saldoTabungan: user.saldoTabungan },
+            user: {id: user._id,
+                username: user.username, 
+                saldoTabungan: user.saldoTabungan, 
+                targetTabungan: user.targetTabungan, 
+                percentageTarget: user.percentageTarget },
             token
         });
     } catch (error) {
@@ -67,9 +76,16 @@ const seeProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+
+        user.percentageTarget = user.targetTabungan > 0 ? `${((user.saldoTabungan / user.targetTabungan) * 100).toFixed(2)}%` : "0%";
+
         return res.status(200).json({
             message: "User profile retrieved",
-            user: { id: user._id, username: user.username, saldoTabungan: user.saldoTabungan }
+            user: { id: user._id,
+                username: user.username, 
+                saldoTabungan: user.saldoTabungan, 
+                targetTabungan: user.targetTabungan, 
+                percentageTarget: user.percentageTarget }
         });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error" });

@@ -20,6 +20,15 @@ const userSchema = new Schema(
             type: Number,
             default: 0,
         },
+        targetTabungan: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
+        percentageTarget: {
+            type: String,
+            default: "0%",
+        },
     },
     {
         timestamps: true,
